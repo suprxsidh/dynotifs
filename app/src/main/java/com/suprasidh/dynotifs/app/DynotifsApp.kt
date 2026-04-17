@@ -7,28 +7,13 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class DynotifsApp : Application() {
-
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannels()
+        createNotificationChannel()
     }
-
-    private fun createNotificationChannels() {
-        val notificationManager = getSystemService(NotificationManager::class.java)
-
-        val overlayChannel = NotificationChannel(
-            CHANNEL_ID_OVERLAY,
-            "Dynotifs Overlay",
-            NotificationManager.IMPORTANCE_LOW
-        ).apply {
-            description = "Foreground service for Dynotifs overlay"
-            setShowBadge(false)
-        }
-
-        notificationManager.createNotificationChannel(overlayChannel)
+    private fun createNotificationChannel() {
+        val channel = NotificationChannel(CHANNEL_ID, "Dynotifs", NotificationManager.IMPORTANCE_LOW)
+        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
     }
-
-    companion object {
-        const val CHANNEL_ID_OVERLAY = "dynotifs_overlay"
-    }
+    companion object { const val CHANNEL_ID = "dynotifs" }
 }
