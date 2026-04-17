@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Dao
 import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
@@ -29,7 +31,7 @@ interface AppDao {
     @Query("SELECT * FROM app_registry WHERE packageName = :packageName")
     suspend fun getApp(packageName: String): RegisteredApp?
 
-    @Query("INSERT OR REPLACE INTO app_registry VALUES (:packageName, :isBlocked, :isMonitored, :addedAt)")
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertApp(app: RegisteredApp)
 
     @Query("DELETE FROM app_registry WHERE packageName = :packageName")
