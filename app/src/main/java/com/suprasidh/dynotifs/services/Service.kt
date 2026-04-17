@@ -5,12 +5,11 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.suprasidh.dynotifs.app.DynotifsApp
-import com.suprasidh.dynotifs.app.R
 
 class DynotifsForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(NOTIF_ID, NotificationCompat.Builder(this, DynotifsApp.CHANNEL_ID).setContentTitle("Dynotifs").setContentText("Running").build())
+        startForeground(NOTIF_ID, NotificationCompat.Builder(this, DynotifsApp.CHANNEL_ID).setSmallIcon(android.R.drawable.ic_menu_view).setContentTitle("Dynotifs").setContentText("Running").build())
         return START_STICKY
     }
     companion object { const val NOTIF_ID = 1001 }
