@@ -20,6 +20,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           
+      - name: Create debug keystore
+        run: |
+          keytool -genkeypair -v -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Debug, OU=Debug, O=Debug, L=Debug, ST=Debug, C=US"
+          
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         
@@ -39,5 +43,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Dynotifs-V1-QA
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 30
