@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Composable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -88,7 +89,6 @@ fun CalibrationScreen(
                 ) { Text("Apply Calibration") }
             }
 
-            // Preview
             Box(
                 modifier = Modifier
                     .offset { IntOffset(((metrics.x * offsetX) - 90).toInt(), ((metrics.y * offsetY) + 200).toInt()) }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Composable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -60,7 +61,10 @@ fun IslandPill(
                         if (kotlin.math.abs(offsetX) > 100) onDrag()
                         offsetX = 0f
                     },
-                    onDrag = { change, _ -> offsetX += change.positionChange().x }
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                    }
                 )
             }
             .padding(horizontal = 12.dp, vertical = 8.dp)
