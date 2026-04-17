@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suprasidh.dynotifs.data.datastore.DynotifsDataStore
@@ -62,11 +64,14 @@ class MainViewModel @Inject constructor(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModel: MainViewModel by lazy { (this as ComponentActivity).viewModels<MainViewModel>().value }
+
+    private val viewModel: MainViewModel by hiltViewModel()
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { if (it) viewModel.onNotificationPermissionGranted() }
+    ) { isGranted ->
+        if (isGranted) viewModel.onNotificationPermissionGranted()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,9 +84,9 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 when (uiState) {
                     MainUiState.Loading -> LoadingScreen()
-                    MainUiState.NeedsPermissions -> PermissionScreen { viewModel.onPermissionsGranted() }
-                    MainUiState.NeedsCalibration -> CalibrationScreen { viewModel.onCalibrationComplete() }
-                    MainUiState.Ready -> SettingsScreen({ startDynotifs() }, { stopDynotifs() }, { })
+                    MainUiState.NeedsPermissions -> PermissionScreen(onPermissionsGranted = { viewModel.onPermissionsGranted() })
+                    MainUiState.NeedsCalibration -> CalibrationScreen(onCalibrationComplete = { viewModel.onCalibrationComplete() })
+                    MainUiState.Ready -> SettingsScreen(onStartDynotifs = { startDynotifs() }, onStopDynotifs = { stopDynotifs() }, onOpenAppRegistry = { })
                 }
             }
         }
@@ -96,7 +101,7 @@ class MainActivity : ComponentActivity() {
         DynotifsForegroundService.start(this)
     }
     private fun stopDynotifs() = DynotifsForegroundService.stop(this)
-    private fun requestOverlayPermission() = startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName")))
+    private fun requestOverlayPermission() = startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
 }
 
 @Composable fun LoadingScreen() = Column(Modifier.fillMaxSize().padding(32.dp), Arrangement.Center) { Text("Loading...") }
