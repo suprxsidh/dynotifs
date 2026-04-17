@@ -92,7 +92,7 @@ fun CalibrationScreen(
             Box(
                 modifier = Modifier
                     .offset { IntOffset(((metrics.x * offsetX) - 90).toInt(), ((metrics.y * offsetY) + 200).toInt()) }
-                    .size((metrics.x * width).coerceAtLeast(60).dp, (metrics.y * height).coerceAtLeast(30).dp)
+                    .size(((metrics.x * width).toInt().coerceAtLeast(60)).dp, ((metrics.y * height).toInt().coerceAtLeast(30)).dp)
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color.Black.copy(alpha = 0.7f))
                     .border(2.dp, Color.White, RoundedCornerShape(20.dp))

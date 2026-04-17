@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.Composable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -21,14 +22,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.suprasidh.dynotifs.data.datastore.DynotifsDataStore
 import com.suprasidh.dynotifs.services.DynotifsForegroundService
-import com.suprasidh.dynotifs.ui.onboarding.CalibrationScreen
-import com.suprasidh.dynotifs.ui.onboarding.PermissionScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -39,6 +40,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val dataStore = DynotifsDataStore(context)
     val settings by dataStore.appSettingsFlow.collectAsState(initial = com.suprasidh.dynotifs.data.model.AppSettings())
+    val scope = rememberCoroutineScope()
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize().padding(32.dp)) {
@@ -51,7 +53,9 @@ fun SettingsScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Enable Dynotifs", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                        Switch(checked = settings.islandEnabled, onCheckedChange = { dataStore.setIslandEnabled(it) })
+                        Switch(checked = settings.islandEnabled, onCheckedChange = { 
+                            scope.launch { dataStore.setIslandEnabled(it) }
+                        })
                     }
                 }
             }
@@ -77,11 +81,4 @@ fun SettingsScreen(
             Text("Version 1.0.0", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
         }
     }
-}
-
-sealed class AppScreen {
-    data object Settings : AppScreen()
-    data object Calibration : AppScreen()
-    data object Permissions : AppScreen()
-    data object AppRegistry : AppScreen()
 }
