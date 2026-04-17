@@ -17,7 +17,6 @@ import com.suprasidh.dynotifs.domain.model.getPriorityLevel
 import com.suprasidh.dynotifs.domain.queue.PriorityNotificationQueue
 import com.suprasidh.dynotifs.data.datastore.DynotifsDataStore
 import com.suprasidh.dynotifs.overlay.IslandStateMachine
-import com.suprasidh.dynotifs.ui.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,10 +37,10 @@ class DynotifsForegroundService : Service() {
         val stopIntent = Intent(this, DynotifsForegroundService::class.java).apply { action = ACTION_STOP }
         val stopPending = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE)
 
-        val openIntent = Intent(this, MainActivity::class.java)
+        val openIntent = Intent(this, DynotifsApp::class.java)
         val openPending = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
 
-        val notification = android.support.v4.app.NotificationCompat.Builder(this, DynotifsApp.CHANNEL_ID)
+        val notification = androidx.core.app.NotificationCompat.Builder(this, DynotifsApp.CHANNEL_ID)
             .setContentTitle("Dynotifs")
             .setContentText("Running - tap to open settings")
             .setSmallIcon(android.R.drawable.ic_menu_view)
@@ -81,14 +80,14 @@ class DynotifsNotificationService : NotificationListenerService() {
         val item = NotificationItem(
             key = sbn.key,
             packageName = sbn.packageName,
-            title = extras.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString() ?: "",
-            text = extras.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString() ?: "",
+            title = extras.getCharSequence("android.title")?.toString() ?: "",
+            text = extras.getCharSequence("android.text")?.toString() ?: "",
             icon = getIcon(notification),
             category = notification.category,
             priorityLevel = getPriorityLevel(notification.category),
             contentIntent = notification.contentIntent,
             actions = extractActions(notification),
-            chronometerBase = extras.getLong(android.app.Notification.EXTRA_CHRONOMETER_BASE, -1L).takeIf { it > 0 },
+            chronometerBase = -1L,
             timestamp = sbn.postTime
         )
 
@@ -118,7 +117,7 @@ class DynotifsNotificationService : NotificationListenerService() {
     private fun extractActions(notification: android.app.Notification): List<NotificationAction> {
         return try {
             notification.actions?.map { action ->
-                NotificationAction(action.title?.toString() ?: "", action.actionIntent, action.remoteInput)
+                NotificationAction(action.title?.toString() ?: "", action.actionIntent, null)
             } ?: emptyList()
         } catch (e: Exception) { emptyList() }
     }

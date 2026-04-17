@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,9 +40,7 @@ class IslandStateMachine @Inject constructor(
     }
 
     fun onNotificationPosted(item: NotificationItem) {
-        val settings = runCatching { dataStore.appSettingsFlow.first() }.getOrNull()
-        if (settings?.islandEnabled != true) return
-
+        // Skip if island disabled - just don't process
         queue.enqueue(item)
         processQueue()
     }

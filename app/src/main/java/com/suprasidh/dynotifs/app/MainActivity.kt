@@ -16,6 +16,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
@@ -28,6 +29,7 @@ import com.suprasidh.dynotifs.ui.settings.AppRegistryScreen
 import com.suprasidh.dynotifs.ui.settings.SettingsScreen
 import com.suprasidh.dynotifs.util.PermissionsHelper
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 enum class Screen { LOADING, PERMISSIONS, CALIBRATION, SETTINGS, APP_REGISTRY }
 
@@ -47,8 +49,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val settings by dataStore.appSettingsFlow.collectAsState(initial = AppSettings())
             var currentScreen by remember { mutableStateOf(Screen.LOADING) }
+            val scope = rememberCoroutineScope()
 
-            // Determine initial screen
             currentScreen = when {
                 !settings.onboardingComplete -> Screen.CALIBRATION
                 else -> Screen.SETTINGS
@@ -56,13 +58,13 @@ class MainActivity : ComponentActivity() {
 
             Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 when (currentScreen) {
-                    Screen.LOADING -> { /* Show loading */ }
+                    Screen.LOADING -> { }
                     Screen.PERMISSIONS -> PermissionScreen {
+                        scope.launch { dataStore.setOnboardingComplete(true) }
                         currentScreen = Screen.CALIBRATION
-                        dataStore.setOnboardingComplete(true)
                     }
                     Screen.CALIBRATION -> CalibrationScreen {
-                        dataStore.setOnboardingComplete(true)
+                        scope.launch { dataStore.setOnboardingComplete(true) }
                         currentScreen = Screen.SETTINGS
                     }
                     Screen.SETTINGS -> SettingsScreen(
