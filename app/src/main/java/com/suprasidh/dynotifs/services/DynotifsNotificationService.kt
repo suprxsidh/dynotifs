@@ -11,7 +11,7 @@ import android.service.notification.StatusBarNotification
 import com.suprasidh.dynotifs.domain.model.NotificationAction
 import com.suprasidh.dynotifs.domain.model.NotificationItem
 import com.suprasidh.dynotifs.domain.model.PriorityLevel
-import com.suprasidh.dynotifs.domain.model.toPriorityLevel
+import com.suprasidh.dynotifs.domain.model.getPriorityLevel
 import com.suprasidh.dynotifs.overlay.IslandStateMachine
 import dagger.hilt.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +43,7 @@ class DynotifsNotificationService : NotificationListenerService() {
 
         val icon = getNotificationIcon(notification)
         val contentIntent = notification.contentIntent
-        val priorityLevel = category.toPriorityLevel()
+        val priorityLevel = getPriorityLevel(category)
 
         val actions = extractActions(notification)
 

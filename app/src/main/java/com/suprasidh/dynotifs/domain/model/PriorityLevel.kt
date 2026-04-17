@@ -10,8 +10,8 @@ enum class PriorityLevel {
     TIER_5_OTHER
 }
 
-fun Notification.category?.toPriorityLevel(): PriorityLevel {
-    return when (this) {
+fun getPriorityLevel(category: String?): PriorityLevel {
+    return when (category) {
         Notification.CATEGORY_CALL -> PriorityLevel.TIER_1_CALL
         Notification.CATEGORY_MESSAGE -> PriorityLevel.TIER_2_MESSAGE
         Notification.CATEGORY_ALARM,
