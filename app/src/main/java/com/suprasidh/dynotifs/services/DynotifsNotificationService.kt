@@ -1,7 +1,6 @@
 package com.suprasidh.dynotifs.services
 
 import android.app.Notification
-import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -17,12 +16,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+
 class DynotifsNotificationService : NotificationListenerService() {
 
-    @Inject
-    lateinit var stateMachine: IslandStateMachine
-
+    private var stateMachine: IslandStateMachine? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    private fun getStateMachine(): IslandStateMachine {
+        if (stateMachine == null) {
+            stateMachine = IslandStateMachine(
+                com.suprasidh.dynotifs.domain.queue.PriorityNotificationQueue(),
+                com.suprasidh.dynotifs.data.datastore.DynotifsDataStore(applicationContext),
+                com.suprasidh.dynotifs.overlay.OverlayWindowManager(applicationContext, 
+                    com.suprasidh.dynotifs.data.datastore.DynotifsDataStore(applicationContext))
+            )
+        }
+        return stateMachine!!
+    }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
@@ -33,8 +43,8 @@ class DynotifsNotificationService : NotificationListenerService() {
         if (isSystemPackage(sbn.packageName)) return
 
         val key = sbn.key
-        val title = extras.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString() ?: ""
-        val text = extras.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString() ?: ""
+        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
+        val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
         val category = notification.category
 
         val icon = getNotificationIcon(notification)
@@ -42,8 +52,6 @@ class DynotifsNotificationService : NotificationListenerService() {
         val priorityLevel = getPriorityLevel(category)
 
         val actions = extractActions(notification)
-
-        val chronometerBase = extras.getLong(android.app.Notification.EXTRA_CHRONOMETER_BASE, -1L).takeIf { it > 0 }
 
         val item = NotificationItem(
             key = key,
@@ -55,12 +63,11 @@ class DynotifsNotificationService : NotificationListenerService() {
             priorityLevel = priorityLevel,
             contentIntent = contentIntent,
             actions = actions,
-            chronometerBase = chronometerBase,
             timestamp = sbn.postTime
         )
 
         scope.launch {
-            stateMachine.onNotificationPosted(item)
+            getStateMachine().onNotificationPosted(item)
         }
     }
 
@@ -70,7 +77,7 @@ class DynotifsNotificationService : NotificationListenerService() {
         val key = sbn.key
 
         scope.launch {
-            stateMachine.onNotificationRemoved(key)
+            getStateMachine().onNotificationRemoved(key)
         }
     }
 
@@ -105,7 +112,7 @@ class DynotifsNotificationService : NotificationListenerService() {
             intrinsicHeight.coerceAtLeast(1),
             Bitmap.Config.ARGB_8888
         )
-        val canvas = Canvas(bitmap)
+        val canvas = android.graphics.Canvas(bitmap)
         setBounds(0, 0, canvas.width, canvas.height)
         draw(canvas)
         return bitmap
@@ -118,7 +125,7 @@ class DynotifsNotificationService : NotificationListenerService() {
                 NotificationAction(
                     title = action.title?.toString() ?: "",
                     intent = action.actionIntent,
-                    remoteInput = action.remoteInput
+                    remoteInput = null
                 )
             }
         } catch (e: Exception) {
@@ -133,7 +140,5 @@ class DynotifsNotificationService : NotificationListenerService() {
             "com.google.android.gms",
             "com.suprasidh.dynotifs"
         )
-
-        fun getPackageName(): String = "com.suprasidh.dynotifs"
     }
 }

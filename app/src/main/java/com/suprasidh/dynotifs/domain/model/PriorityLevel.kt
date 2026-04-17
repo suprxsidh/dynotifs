@@ -14,8 +14,8 @@ fun getPriorityLevel(category: String?): PriorityLevel {
     return when (category) {
         Notification.CATEGORY_CALL -> PriorityLevel.TIER_1_CALL
         Notification.CATEGORY_MESSAGE -> PriorityLevel.TIER_2_MESSAGE
-        Notification.CATEGORY_ALARM,
-        Notification.CATEGORY_TIMER -> PriorityLevel.TIER_3_TIMER
+        Notification.CATEGORY_ALARM -> PriorityLevel.TIER_3_TIMER
+        "timer" -> PriorityLevel.TIER_3_TIMER
         Notification.CATEGORY_TRANSPORT,
         Notification.CATEGORY_SERVICE -> PriorityLevel.TIER_4_MEDIA
         else -> PriorityLevel.TIER_5_OTHER
