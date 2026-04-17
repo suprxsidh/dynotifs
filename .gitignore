@@ -1,0 +1,70 @@
+# Built application files
+*.apk
+*.ap_
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+
+# Gradle files
+.gradle/
+build/
+local.properties
+
+# Proguard files
+proguard/
+
+# Log Files
+*.log
+
+# Android Studio Navigation editor
+.navigation/
+
+# Android Studio captures folder
+captures/
+
+# IntelliJ
+*.iml
+.idea/
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build folder
+.externalNativeBuild
+
+# Google Services (API key for Google Maps)
+google-services.json
+
+# Freeline
+freeline.py
+freeline/
+freeline_project_description.json
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+
+# Version control
+vcs.xml
+
+# lint
+intermediates/
+lint/intermediate-files.xml
+lint/generated/
+lint/outputs/
+lint/tmp/
+
+# Mac OS
+.DS_Store
