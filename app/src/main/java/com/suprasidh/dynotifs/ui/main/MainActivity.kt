@@ -31,7 +31,6 @@ import com.suprasidh.dynotifs.services.DynotifsForegroundService
 import com.suprasidh.dynotifs.ui.onboarding.CalibrationScreen
 import com.suprasidh.dynotifs.ui.onboarding.PermissionScreen
 import com.suprasidh.dynotifs.ui.settings.SettingsScreen
-import com.suprasidh.dynotifs.ui.settings.AppRegistryScreen
 import com.suprasidh.dynotifs.util.PermissionsHelper
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,58 +41,32 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class MainUiState {
-    data object Loading : MainUiState()
-    data object NeedsPermissions : MainUiState()
-    data object NeedsCalibration : MainUiState()
-    data object Ready : MainUiState()
+    data object Loading
+    data object NeedsPermissions
+    data object NeedsCalibration
+    data object Ready
 }
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val dataStore: DynotifsDataStore
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<MainUiState>(MainUiState.Loading)
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
-    fun checkPermissions() {
-        viewModelScope.launch {
-            _uiState.value = MainUiState.NeedsPermissions
-        }
-    }
-
-    fun onPermissionsGranted() {
-        _uiState.value = MainUiState.NeedsCalibration
-    }
-
-    fun onCalibrationComplete() {
-        viewModelScope.launch {
-            dataStore.setOnboardingComplete(true)
-            _uiState.value = MainUiState.Ready
-        }
-    }
-
-    fun onNotificationPermissionGranted() {
-        viewModelScope.launch {
-            checkPermissions()
-        }
-    }
+    fun checkPermissions() { _uiState.value = MainUiState.NeedsPermissions }
+    fun onPermissionsGranted() { _uiState.value = MainUiState.NeedsCalibration }
+    fun onCalibrationComplete() { _uiState.value = MainUiState.Ready }
+    fun onNotificationPermissionGranted() { checkPermissions() }
 }
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private val viewModel: MainViewModel by lazy {
-        androidx.hilt.lifecycle.viewModel(this)
-    }
+    private val viewModel: MainViewModel by lazy { (this as ComponentActivity).viewModels<MainViewModel>().value }
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            viewModel.onNotificationPermissionGranted()
-        }
-    }
+    ) { if (it) viewModel.onNotificationPermissionGranted() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,82 +76,27 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val uiState by viewModel.uiState.collectAsState()
-
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
+            Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 when (uiState) {
-                    is MainUiState.Loading -> {
-                        LoadingScreen()
-                    }
-                    is MainUiState.NeedsPermissions -> {
-                        PermissionScreen(
-                            onPermissionsGranted = { viewModel.onPermissionsGranted() }
-                        )
-                    }
-                    is MainUiState.NeedsCalibration -> {
-                        CalibrationScreen(
-                            onCalibrationComplete = { viewModel.onCalibrationComplete() }
-                        )
-                    }
-                    is MainUiState.Ready -> {
-                        SettingsScreen(
-                            onStartDynotifs = { startDynotifs() },
-                            onStopDynotifs = { stopDynotifs() },
-                            onOpenAppRegistry = { openAppRegistry() }
-                        )
-                    }
+                    MainUiState.Loading -> LoadingScreen()
+                    MainUiState.NeedsPermissions -> PermissionScreen { viewModel.onPermissionsGranted() }
+                    MainUiState.NeedsCalibration -> CalibrationScreen { viewModel.onCalibrationComplete() }
+                    MainUiState.Ready -> SettingsScreen({ startDynotifs() }, { stopDynotifs() }, { })
                 }
             }
         }
-
         viewModel.checkPermissions()
     }
 
     private fun startDynotifs() {
-        if (!PermissionsHelper.hasOverlayPermission(this)) {
-            requestOverlayPermission()
-            return
+        if (!PermissionsHelper.hasOverlayPermission(this)) { requestOverlayPermission(); return }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS); return
         }
-
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            return
-        }
-
         DynotifsForegroundService.start(this)
     }
-
-    private fun stopDynotifs() {
-        DynotifsForegroundService.stop(this)
-    }
-
-    private fun requestOverlayPermission() {
-        val intent = Intent(
-            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            android.net.Uri.parse("package:$packageName")
-        )
-        startActivity(intent)
-    }
-
-    private fun openAppRegistry() {
-        startActivity(Intent(this, AppRegistryScreen::class.java))
-    }
+    private fun stopDynotifs() = DynotifsForegroundService.stop(this)
+    private fun requestOverlayPermission() = startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName")))
 }
 
-@Composable
-fun LoadingScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Loading...")
-    }
-}
+@Composable fun LoadingScreen() = Column(Modifier.fillMaxSize().padding(32.dp), Arrangement.Center) { Text("Loading...") }
