@@ -13,14 +13,10 @@ import com.suprasidh.dynotifs.domain.model.NotificationItem
 import com.suprasidh.dynotifs.domain.model.PriorityLevel
 import com.suprasidh.dynotifs.domain.model.getPriorityLevel
 import com.suprasidh.dynotifs.overlay.IslandStateMachine
-import dagger.hilt.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-@AndroidEntryPoint
 class DynotifsNotificationService : NotificationListenerService() {
 
     @Inject

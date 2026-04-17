@@ -40,7 +40,7 @@ class OverlayWindowManager @Inject constructor(
     private var isShowingPill = false
     private var isShowingExpanded = false
 
-    private val _currentState = MutableStateFlow(IslandState.Hidden)
+    private val _currentState: MutableStateFlow<IslandState> = MutableStateFlow(IslandState.Hidden)
     val currentState: StateFlow<IslandState> = _currentState.asStateFlow()
 
     private var currentItem: NotificationItem? = null
