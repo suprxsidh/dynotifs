@@ -5,4 +5,5 @@
     <color name="transparent">#00000000</color>
     <color name="primary">#FF6200EE</color>
     <color name="secondary">#FF03DAC5</color>
+    <color name="ic_launcher_background">#FF6200EE</color>
 </resources>

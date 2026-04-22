@@ -45,3 +45,31 @@ jobs:
           name: Dynotifs-V1-QA
           path: app/build/outputs/apk/release/*.apk
           retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/release/app-release.apk
+          tag_name: v1.0.1
+          name: Dynotifs v1.0.1
+          body: |
+            ## Dynotifs v1.0.1 - Bug Fixes Release
+            
+            ### What's Fixed:
+            - Calibration now applies to overlay position
+            - Y slider allows full screen positioning (0-100%)
+            - Music/media category notifications now display
+            - Removed Google Play Services blocklist
+            
+            ### Known Issues:
+            - Hole punch camera mask not yet implemented
+            
+            ### Installation:
+            1. Download the APK below
+            2. Enable "Install from unknown sources" in settings
+            3. Install and grant permissions (Overlay, Notification Listener)
+            
+            Built with 💪 by @suprxsidh
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
