@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -61,35 +62,47 @@ class OverlayWindowManager @Inject constructor(
 
         try {
             hideExpanded()
-            pillView = ComposeView(context).apply {
-                setContent {
-                    IslandPill(
-                        title = item.title,
-                        text = item.text,
-                        icon = item.icon,
-                        onTap = { onPillTapped?.invoke() },
-                        onLongPress = { onPillLongPressed?.invoke() },
-                        onDrag = { onPillDragged?.invoke() }
-                    )
+
+            scope.launch {
+                val calibration = dataStore.calibrationFlow.first()
+                val metrics = getScreenMetrics()
+                val width = (metrics.x * calibration.widthPercent).toInt()
+                val height = (metrics.y * calibration.heightPercent).toInt()
+                val x = (metrics.x * calibration.offsetXPercent).toInt()
+                val y = (metrics.y * calibration.offsetYPercent).toInt()
+
+                pillView = ComposeView(context).apply {
+                    setContent {
+                        IslandPill(
+                            title = item.title,
+                            text = item.text,
+                            icon = item.icon,
+                            onTap = { onPillTapped?.invoke() },
+                            onLongPress = { onPillLongPressed?.invoke() },
+                            onDrag = { onPillDragged?.invoke() }
+                        )
+                    }
                 }
-            }
-            val lp = WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                (WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN),
-                PixelFormat.TRANSLUCENT
-            ).apply {
-                gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                val lp = WindowManager.LayoutParams(
+                    width,
+                    height,
+                    x,
+                    y,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    (WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN),
+                    PixelFormat.TRANSLUCENT
+                ).apply {
+                    gravity = Gravity.START or Gravity.TOP
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                    }
                 }
+                wm.addView(pillView, lp)
+                isShowingPill = true
+                _currentState.value = IslandState.PILL
             }
-            wm.addView(pillView, lp)
-            isShowingPill = true
-            _currentState.value = IslandState.PILL
         } catch (e: Exception) { e.printStackTrace() }
     }
 

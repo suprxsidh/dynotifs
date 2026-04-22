@@ -68,7 +68,7 @@ class DynotifsNotificationService : NotificationListenerService() {
     private val dataStore by lazy { DynotifsDataStore(applicationContext) }
     private val stateMachine by lazy { IslandStateMachine(queue, dataStore, com.suprasidh.dynotifs.overlay.OverlayWindowManager(applicationContext, dataStore)) }
 
-    private val ignoredPackages = setOf("com.android.systemui", "com.android.launcher", "com.google.android.gms", "com.suprasidh.dynotifs")
+    private val ignoredPackages = setOf("com.android.systemui", "com.android.launcher", "com.suprasidh.dynotifs")
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return

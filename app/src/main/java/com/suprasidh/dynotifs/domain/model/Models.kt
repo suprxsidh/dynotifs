@@ -19,7 +19,7 @@ fun getPriorityLevel(category: String?): PriorityLevel {
         "call" -> PriorityLevel.TIER_1_CALL
         "message" -> PriorityLevel.TIER_2_MESSAGE
         "alarm", "timer" -> PriorityLevel.TIER_3_TIMER
-        "transport", "service" -> PriorityLevel.TIER_4_MEDIA
+        "transport", "service", "media" -> PriorityLevel.TIER_4_MEDIA
         else -> PriorityLevel.TIER_5_OTHER
     }
 }
