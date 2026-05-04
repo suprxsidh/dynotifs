@@ -11,6 +11,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.suprasidh.dynotifs.app.DynotifsApp
+import com.suprasidh.dynotifs.data.database.AppRegistryDatabase
+import com.suprasidh.dynotifs.data.database.RegisteredApp
 import com.suprasidh.dynotifs.domain.model.NotificationAction
 import com.suprasidh.dynotifs.domain.model.NotificationItem
 import com.suprasidh.dynotifs.domain.model.getPriorityLevel
@@ -20,6 +22,7 @@ import com.suprasidh.dynotifs.overlay.IslandStateMachine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class DynotifsForegroundService : Service() {
@@ -67,15 +70,31 @@ class DynotifsNotificationService : NotificationListenerService() {
     private val queue = PriorityNotificationQueue()
     private val dataStore by lazy { DynotifsDataStore(applicationContext) }
     private val stateMachine by lazy { IslandStateMachine(queue, dataStore, com.suprasidh.dynotifs.overlay.OverlayWindowManager(applicationContext, dataStore)) }
+    private val appDatabase by lazy { AppRegistryDatabase.getInstance(applicationContext) }
 
-    private val ignoredPackages = setOf("com.android.systemui", "com.android.launcher", "com.suprasidh.dynotifs")
+    private val systemPackages = setOf("com.android.systemui", "com.android.launcher", "com.suprasidh.dynotifs")
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
-        if (sbn.packageName in ignoredPackages) return
+        if (sbn.packageName in systemPackages) return
 
         val notification = sbn.notification ?: return
         val extras = notification.extras ?: return
+
+        try {
+            val registeredApps = runCatching {
+                appDatabase.appDao().getAllApps()
+            }.getOrNull()?.let { flow ->
+                runCatching { kotlinx.coroutines.runBlocking { flow.first() } }.getOrNull()
+            } ?: emptyList()
+
+            if (registeredApps.isNotEmpty()) {
+                val isRegistered = registeredApps.any { it.packageName == sbn.packageName && !it.isBlocked }
+                if (!isRegistered) return
+            }
+        } catch (e: Exception) {
+            // If we can't check, allow the notification through
+        }
 
         val item = NotificationItem(
             key = sbn.key,
