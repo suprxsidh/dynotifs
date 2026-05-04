@@ -50,8 +50,8 @@ jobs:
           path: app/build/outputs/apk/release/*.apk
           retention-days: 30
 
-      - name: Create GitHub Release
-        if: success()
+- name: Create GitHub Release
+        if: success() && startsWith(github.ref_name, 'v')
         uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/release/app-release.apk
@@ -61,13 +61,9 @@ jobs:
             ## Dynotifs ${{ github.ref_name }} - App Registry Update
             
             ### New Features:
-            - Users can now manage which apps show notifications directly in the app
+            - Users can now manage notification apps directly in the app
             - Go to Settings > App Registry to toggle apps on/off
             - No ADB commands needed!
-            
-            ### What's Fixed:
-            - Removed duplicate color definitions
-            - Auto-release workflow improvements
             
             ### Installation:
             1. Download the APK below
