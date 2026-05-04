@@ -54,19 +54,19 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/release/app-release.apk
-          tag_name: v1.0.1
-          name: Dynotifs v1.0.1
+          tag_name: ${{ github.ref_name }}
+          name: Dynotifs ${{ github.ref_name }}
           body: |
-            ## Dynotifs v1.0.1 - Bug Fixes Release
+            ## Dynotifs ${{ github.ref_name }} - App Registry Update
+            
+            ### New Features:
+            - Users can now manage which apps show notifications directly in the app
+            - Go to Settings > App Registry to toggle apps on/off
+            - No ADB commands needed!
             
             ### What's Fixed:
-            - Calibration now applies to overlay position
-            - Y slider allows full screen positioning (0-100%)
-            - Music/media category notifications now display
-            - Removed Google Play Services blocklist
-            
-            ### Known Issues:
-            - Hole punch camera mask not yet implemented
+            - Removed duplicate color definitions
+            - Auto-release workflow improvements
             
             ### Installation:
             1. Download the APK below
