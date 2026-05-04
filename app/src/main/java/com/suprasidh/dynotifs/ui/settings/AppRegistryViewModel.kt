@@ -1,6 +1,7 @@
 package com.suprasidh.dynotifs.ui.settings
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
